@@ -1,0 +1,11 @@
+.vscode
+venv/
+__pycache__/
+*.pyc
+data/models/*
+data/models_safe/*
+data/Cleaned_Data_top_95_percent_features.csv
+data/FullData.csv
+data/GeneratedLabelledFlows.zip
+data/MachineLearningCSV.zip
+data/top_95_percent_features.csv
