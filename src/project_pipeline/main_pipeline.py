@@ -8,9 +8,10 @@ from project_pipeline.models_xgb import train_xgb
 from project_pipeline.models_lgbm import train_lgb
 from project_pipeline.models_cnn import train_cnn
 from project_pipeline.utils_save_load import save_model, load_model
-from project_pipeline.evaluation import evaluate_model
+from project_pipeline.evaluation import evaluate_model, plot_confusion
 from project_pipeline.poster_materials import generate_poster_materials
 from tensorflow.keras.models import load_model as load_keras_model
+
 
 def main():
     # -----------------------------
@@ -18,11 +19,25 @@ def main():
     # -----------------------------
     current_dir = os.path.dirname(os.path.abspath(__file__))
     cleaned_data_path = os.path.join(current_dir, "../../data/Cleaned_Data_top_95_percent_features.csv")
+    cleaned_data_path = os.path.normpath(cleaned_data_path)
     df = load_cleaned_data(cleaned_data_path)
     X_train_bal, X_test, y_train_bal, y_test, _ = prepare_data(df)
 
     models_dir = os.path.join(current_dir, "../../data/models")
+    models_dir = os.path.normpath(models_dir)
     os.makedirs(models_dir, exist_ok=True)
+
+    results_dir = os.path.join(current_dir, "../../data/results")
+    results_dir = os.path.normpath(results_dir)
+    os.makedirs(results_dir, exist_ok=True)
+
+    poster_dir = os.path.join(current_dir, "../../data/poster_materials")
+    poster_dir = os.path.normpath(poster_dir)   
+    os.makedirs(poster_dir, exist_ok=True)
+
+    # # Output directory for confusion matrices
+    # confusion_dir = os.path.join(current_dir, "../../data/poster_materials/confusion_matrices")
+    # os.makedirs(confusion_dir, exist_ok=True)
 
     # -----------------------------
     # Model Save Paths
@@ -37,9 +52,9 @@ def main():
 
     metrics_dict = {}  # To store Accuracy, F1, ROC-AUC for all models
 
-    # -----------------------------
-    # Random Forest
-    # -----------------------------
+    # =====================================================================
+    # RANDOM FOREST
+    # =====================================================================
     if os.path.exists(model_paths["rf"]):
         rf = load_model(model_paths["rf"])
         print("Loaded saved Random Forest model")
@@ -50,11 +65,19 @@ def main():
 
     y_pred = rf.predict(X_test)
     y_prob = rf.predict_proba(X_test)[:, 1]
-    metrics_dict["Random Forest"] = evaluate_model("Random Forest", y_test, y_pred, y_prob)
 
-    # -----------------------------
-    # Logistic Regression
-    # -----------------------------
+    metrics_dict["Random Forest"] = evaluate_model("Random Forest", y_test, y_pred, y_prob, results_dir=results_dir)
+
+    plot_confusion(
+        model_name="Random_Forest",
+        y_true=y_test,
+        y_pred=y_pred,
+        results_dir=results_dir
+    )
+
+    # =====================================================================
+    # LOGISTIC REGRESSION
+    # =====================================================================
     if os.path.exists(model_paths["lr"]):
         lr = load_model(model_paths["lr"])
         print("Loaded saved Logistic Regression model")
@@ -65,11 +88,19 @@ def main():
 
     y_pred = lr.predict(X_test)
     y_prob = lr.predict_proba(X_test)[:, 1]
-    metrics_dict["Logistic Regression"] = evaluate_model("Logistic Regression", y_test, y_pred, y_prob)
 
-    # -----------------------------
-    # XGBoost
-    # -----------------------------
+    metrics_dict["Logistic Regression"] = evaluate_model("Logistic Regression", y_test, y_pred, y_prob, results_dir=results_dir)
+
+    plot_confusion(
+        model_name="Logistic_Regression",
+        y_true=y_test,
+        y_pred=y_pred,
+        results_dir=results_dir
+    )
+
+    # =====================================================================
+    # XGBOOST
+    # =====================================================================
     if os.path.exists(model_paths["xgb"]):
         xgb = load_model(model_paths["xgb"])
         print("Loaded saved XGBoost model")
@@ -80,11 +111,19 @@ def main():
 
     y_pred = xgb.predict(X_test)
     y_prob = xgb.predict_proba(X_test)[:, 1]
-    metrics_dict["XGBoost"] = evaluate_model("XGBoost", y_test, y_pred, y_prob)
 
-    # -----------------------------
-    # LightGBM
-    # -----------------------------
+    metrics_dict["XGBoost"] = evaluate_model("XGBoost", y_test, y_pred, y_prob, results_dir=results_dir)
+
+    plot_confusion(
+        model_name="XGBoost",
+        y_true=y_test,
+        y_pred=y_pred,
+        results_dir=results_dir
+    )
+
+    # =====================================================================
+    # LIGHTGBM
+    # =====================================================================
     if os.path.exists(model_paths["lgb"]):
         lgb = load_model(model_paths["lgb"])
         print("Loaded saved LightGBM model")
@@ -95,11 +134,20 @@ def main():
 
     y_pred = lgb.predict(X_test)
     y_prob = lgb.predict_proba(X_test)[:, 1]
-    metrics_dict["LightGBM"] = evaluate_model("LightGBM", y_test, y_pred, y_prob)
 
-    # -----------------------------
+    metrics_dict["LightGBM"] = evaluate_model("LightGBM", y_test, y_pred, y_prob, results_dir=results_dir)
+
+    plot_confusion(
+        model_name="LightGBM",
+        y_true=y_test,
+        y_pred=y_pred,
+        results_dir=results_dir
+        
+    )
+
+    # =====================================================================
     # CNN
-    # -----------------------------
+    # =====================================================================
     if os.path.exists(model_paths["cnn"]):
         cnn = load_keras_model(model_paths["cnn"])
         print("Loaded saved CNN model")
@@ -108,19 +156,27 @@ def main():
         cnn.save(model_paths["cnn"])
         print("CNN trained and saved")
 
-    y_prob = cnn.predict(X_test).flatten()           
-    y_pred = (y_prob > 0.5).astype(int)           
+    y_prob = cnn.predict(X_test).flatten()
+    y_pred = (y_prob > 0.5).astype(int)
 
-    metrics_dict["CNN"] = evaluate_model("CNN", y_test, y_pred, y_prob)
+    metrics_dict["CNN"] = evaluate_model("CNN", y_test, y_pred, y_prob, results_dir=results_dir)
 
-    # -----------------------------
+    plot_confusion(
+        model_name="CNN",
+        y_true=y_test,
+        y_pred=y_pred,
+        results_dir=results_dir
+    )
+
+    # =====================================================================
     # Generate Poster Materials
-    # -----------------------------
+    # =====================================================================
     generate_poster_materials(
         df=df,
         metrics_dict=metrics_dict,
-        output_dir=os.path.join(current_dir, "../../data/poster_materials")
+        output_dir=poster_dir
     )
+
 
 if __name__ == "__main__":
     main()

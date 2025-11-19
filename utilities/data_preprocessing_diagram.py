@@ -75,7 +75,7 @@ ax.annotate('', xy=(orig_label_x + orig_label_w, orig_label_y + orig_label_h/2),
 # -------------------------
 # Title
 # -------------------------
-plt.title('CIC-IDS-2017 Feature & Label Transformation\n(RandomForestRegressor + Binary Label Mapping)', fontsize=12, loc='left')
+plt.title('CIC-IDS-2017 Feature & Label Transformation\n(Cleaning + LGBM Feature Selection + Binary Label Mapping)', fontsize=12, loc='left')
 
 # Show figure
 plt.show()

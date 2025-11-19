@@ -1,0 +1,36 @@
+Feature
+Packet Length Std
+Bwd IAT Max
+Init_Win_bytes_forward
+Fwd IAT Max
+Bwd Packet Length Mean
+Bwd Packet Length Std
+Fwd Packet Length Max
+Bwd Packet Length Max
+Fwd Packet Length Std
+Flow Bytes/s
+Idle Max
+Bwd IAT Total
+Packet Length Variance
+Flow IAT Std
+Bwd IAT Mean
+Flow IAT Max
+Bwd Header Length
+Average Packet Size
+Down/Up Ratio
+Fwd IAT Std
+Max Packet Length
+Bwd IAT Std
+Total Length of Bwd Packets
+Bwd Packets/s
+Bwd Packet Length Min
+Init_Win_bytes_backward
+Total Backward Packets
+Total Length of Fwd Packets
+Bwd IAT Min
+Packet Length Mean
+min_seg_size_forward
+Idle Mean
+Fwd Packet Length Mean
+Fwd IAT Total
+Flow Duration
